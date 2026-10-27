@@ -48,6 +48,11 @@ def validate_dataset(
     sales, sales_columns = _read_csv(sales_path)
     products, product_columns = _read_csv(products_path)
 
+    if not sales:
+        errors.append("Sales CSV contains no data rows")
+    if not products:
+        errors.append("Products CSV contains no data rows")
+
     missing_sales = sorted(SALES_REQUIRED - set(sales_columns))
     missing_products = sorted(PRODUCTS_REQUIRED - set(product_columns))
     if missing_sales:
@@ -79,7 +84,11 @@ def validate_dataset(
     sales_categories: set[str] = set()
 
     for row_number, row in enumerate(sales, start=2):
-        blanks = [column for column in required_sales_values if not row[column].strip()]
+        blanks = [
+            column
+            for column in required_sales_values
+            if not (row.get(column) or "").strip()
+        ]
         if blanks:
             errors.append(f"Sales row {row_number}: blank required fields {blanks}")
             continue
@@ -102,13 +111,17 @@ def validate_dataset(
         if quantity <= 0:
             errors.append(f"Sales row {row_number}: quantity must be positive")
         if unit_price < 0 or net_revenue < 0 or cost < 0:
-            errors.append(f"Sales row {row_number}: price, revenue, and cost must be non-negative")
+            errors.append(
+                f"Sales row {row_number}: price, revenue, and cost must be non-negative"
+            )
         if not 0 <= discount_rate <= 0.20:
             errors.append(f"Sales row {row_number}: discount_rate outside 0..0.20")
 
         expected_revenue = round(quantity * unit_price * (1 - discount_rate), 2)
         if abs(net_revenue - expected_revenue) > 0.011:
-            errors.append(f"Sales row {row_number}: net_revenue does not match quantity, price, and discount")
+            errors.append(
+                f"Sales row {row_number}: net_revenue does not match quantity, price, and discount"
+            )
 
         revenue_total += net_revenue
         cost_total += cost
@@ -128,7 +141,11 @@ def validate_dataset(
 
     product_categories: set[str] = set()
     for row_number, row in enumerate(products, start=2):
-        blanks = [column for column in sorted(PRODUCTS_REQUIRED) if not row[column].strip()]
+        blanks = [
+            column
+            for column in sorted(PRODUCTS_REQUIRED)
+            if not (row.get(column) or "").strip()
+        ]
         if blanks:
             errors.append(f"Products row {row_number}: blank required fields {blanks}")
         if row["active"].strip().lower() not in {"yes", "no"}:
