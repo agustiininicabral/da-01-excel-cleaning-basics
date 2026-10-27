@@ -1,48 +1,58 @@
 # Excel Cleaning Basics
 
+Proyecto de portfolio de Data Analytics para limpieza, validación y análisis exploratorio de datos de ventas sintéticos.
+
+![Data validation](https://github.com/agustiininicabral/da-01-excel-cleaning-basics/actions/workflows/ci.yml/badge.svg)
+
 ## Objetivo
-Limpieza y estandarización de datos (tipos, duplicados, nulos) con checklist reproducible.
 
-## Contexto
-Proyecto de portfolio Data Analytics con dataset ficticio de ventas (3.500 filas) y catálogo de productos. El foco es reproducibilidad y storytelling.
+Demostrar un flujo reproducible de preparación de datos: perfilado, validación de tipos y reglas, SQL básico, KPIs y documentación de insights. Los CSV originales se mantienen sin modificar.
 
-## Alcance
-- Preparación de datos
-- Análisis exploratorio
-- KPIs e insights
-- Reporte final
+## Dataset
 
-## Fuera de alcance
-- Modelos predictivos complejos
-- Machine Learning en producción
-- Infraestructura cloud
+- `02-data/raw/sales.csv`: 3.500 registros de ventas.
+- `02-data/raw/products.csv`: catálogo de 500 productos.
+- `02-data/raw/DATA_DICTIONARY.md`: descripción de campos y reglas.
 
-## Herramientas
-- Excel / Power Query (pasos documentados)
-- SQL (scripts)
-- Power BI (notas y layout)
-- Markdown para documentación
+Los datos son ficticios. Una fila de `sales.csv` representa un pedido, identificado por `order_id`; el catálogo se relaciona con las ventas por categoría, no por `product_id`, porque el archivo de ventas no contiene ese identificador.
 
-## Entregables
-- Dataset (raw + processed)
-- Data Dictionary
-- SQL scripts
-- Reporte final con insights
-- Evidencia (capturas/exports)
+## Validación reproducible
 
-## Cómo reproducir
-1) Copiar datasets desde `_shared_datasets/` a `02-data/raw/`.
-2) Ejecutar SQL en `03-work/sql/` (o adaptar a tu motor).
-3) Documentar transformaciones en `02-data/processed/`.
-4) Completar `05-results/report.md` con KPIs e insights.
+Requiere Python 3.12. En PowerShell, desde la raíz del repositorio:
 
-## Evidencia
-- Ver carpeta `04-evidence/` (capturas, exports, logs).
+```powershell
+py -3.12 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements-dev.txt
+python scripts/validate_data.py
+python -m pytest -q
+ruff format --check scripts tests
+ruff check scripts tests
+```
+
+El validador revisa columnas requeridas, celdas vacías, duplicados de identificadores, fechas, cantidades, descuentos, coherencia de ingresos netos y consistencia de categorías entre ventas y catálogo. Devuelve código de salida distinto de cero si encuentra errores. GitHub Actions ejecuta las mismas verificaciones en cada push y pull request.
+
+## SQL
+
+Los scripts están en `03-work/sql/`:
+
+- `00_load_instructions.sql`: instrucciones para importar los CSV.
+- `01_core_queries.sql`: consultas de ingresos por categoría, margen por canal y clientes con mayor ingreso acumulado.
+
+Las consultas usan sintaxis compatible con PostgreSQL y SQLite. Para SQL Server, adaptá la consulta con `LIMIT` a `TOP` o `OFFSET/FETCH`.
 
 ## Resultados
-- Ver `05-results/report.md`.
 
-## Próximos pasos
-- Publicar dashboard (Power BI) con capturas en `04-evidence/`
-- Agregar README con link a demo / pbix
-- Crear data model estrella en repo 05 y reutilizar
+El análisis y los KPIs están documentados en [05-results/report.md](05-results/report.md). Las cifras corresponden exclusivamente al dataset sintético incluido; no representan resultados de una empresa real.
+
+## Estructura
+
+- `01-requirements/`: preguntas de negocio, alcance e hipótesis.
+- `02-data/raw/`: archivos originales y diccionario.
+- `03-work/sql/`: instrucciones de carga y consultas.
+- `05-results/report.md`: resultados, insights, recomendaciones y limitaciones.
+- `templates/`: plantillas reutilizables.
+
+## Licencia
+
+MIT. Consultá [LICENSE](LICENSE).
