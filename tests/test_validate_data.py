@@ -84,7 +84,11 @@ def test_validator_detects_duplicate_ids_and_invalid_sales_values(
 def test_validator_reports_missing_required_columns(tmp_path: Path) -> None:
     sales_path = tmp_path / "sales.csv"
     products_path = tmp_path / "products.csv"
-    _write_csv(sales_path, {"order_id", "customer_id"}, [{"order_id": "O1", "customer_id": "C1"}])
+    _write_csv(
+        sales_path,
+        {"order_id", "customer_id"},
+        [{"order_id": "O1", "customer_id": "C1"}],
+    )
     _write_csv(products_path, PRODUCTS_REQUIRED, [_valid_product()])
 
     result = validate_dataset(sales_path, products_path)
@@ -102,4 +106,7 @@ def test_validator_detects_category_missing_from_product_catalog(
 
     result = validate_dataset(sales_path, products_path)
 
-    assert any("Sales categories missing from products catalog" in error for error in result["errors"])
+    assert any(
+        "Sales categories missing from products catalog" in error
+        for error in result["errors"]
+    )
